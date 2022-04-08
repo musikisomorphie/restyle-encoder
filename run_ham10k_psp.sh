@@ -1,0 +1,20 @@
+python scripts/train_restyle_psp.py \
+--dataset_type=ham10k \
+--encoder_type=ResNetBackboneEncoder \
+--exp_dir=/home/jwu/Experiment/non_IID/ham10k_psp \
+--workers=8 \
+--batch_size=8 \
+--test_batch_size=8 \
+--test_workers=8 \
+--val_interval=2000 \
+--save_interval=10000 \
+--start_from_latent_avg \
+--lpips_lambda=0 \
+--l2_lambda=10 \
+--w_norm_lambda=0 \
+--moco_lambda=0.5 \
+--input_nc=6 \
+--n_iters_per_batch=1 \
+--output_size=256 \
+--train_decoder=False \
+--stylegan_weights=/home/jwu/Data/non_IID/encoder/2/ham10k/030000.pt

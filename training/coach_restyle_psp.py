@@ -16,6 +16,7 @@ from datasets.images_dataset import ImagesDataset
 from criteria.lpips.lpips import LPIPS
 from models.psp import pSp
 from training.ranger import Ranger
+from utils.data_utils import linspace
 
 
 class Coach:
@@ -163,7 +164,7 @@ class Coach:
 			else:
 				x_input = torch.cat([x, y_hat], dim=1)
 
-			y_hat, latent = self.net.forward(x_input, latent=latent, return_latents=True)
+			y_hat, latent = self.net.forward(x_input, latent=latent, return_latents=True, interp=True)
 			if self.opts.dataset_type == "cars_encode":
 				y_hat = y_hat[:, :, 32:224, :]
 
@@ -178,6 +179,8 @@ class Coach:
 		self.net.eval()
 		agg_loss_dict = []
 		for batch_idx, batch in enumerate(self.test_dataloader):
+			if batch_idx == 10:
+				break
 			x, y = batch
 			with torch.no_grad():
 				x, y = x.to(self.device).float(), y.to(self.device).float()
@@ -185,7 +188,7 @@ class Coach:
 			agg_loss_dict.append(cur_loss_dict)
 
 			# Logging related
-			self.parse_and_log_images(id_logs, x, y, y_hats, title='images/test', subscript='{:04d}'.format(batch_idx))
+			self.parse_and_log_images(id_logs, x, y, y_hats, title='images/test', subscript='{:04d}'.format(batch_idx), display_count=8)
 
 			# For first step just do sanity test on small amount of data
 			if self.global_step == 0 and batch_idx >= 4:
@@ -280,6 +283,7 @@ class Coach:
 			print('\t{} = '.format(key), value)
 
 	def parse_and_log_images(self, id_logs, x, y, y_hat, title, subscript=None, display_count=2):
+		y = linspace(y[0], y[1], y.shape[0])
 		im_data = []
 		for i in range(display_count):
 			if type(y_hat) == dict:
