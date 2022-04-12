@@ -97,8 +97,11 @@ class ResNetProgressiveBackboneEncoder(Module):
     """
     def __init__(self, n_styles=18, opts=None):
         super(ResNetProgressiveBackboneEncoder, self).__init__()
+        stride = 2
+        if opts.output_size == 128:
+            stride = 1 
 
-        self.conv1 = nn.Conv2d(opts.input_nc, 64, kernel_size=7, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv2d(opts.input_nc, 64, kernel_size=7, stride=stride, padding=3, bias=False)
         self.bn1 = BatchNorm2d(64)
         self.relu = PReLU(64)
 

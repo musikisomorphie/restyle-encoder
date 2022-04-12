@@ -1,13 +1,17 @@
 from PIL import Image
+import numpy as np
 import matplotlib.pyplot as plt
 
 
-def tensor2im(var):
+def tensor2im(var, alpha=2, beta=0):
 	var = var.cpu().detach().transpose(0, 2).transpose(0, 1).numpy()
 	var = ((var + 1) / 2)
 	var[var < 0] = 0
 	var[var > 1] = 1
 	var = var * 255
+	if var.shape[1] != var.shape[0]:
+		var = alpha * var + beta
+		var = np.clip(var, 0, 255)
 	return Image.fromarray(var.astype('uint8'))
 
 

@@ -66,8 +66,9 @@ class MedTransforms(TransformsConfig):
 
     def __init__(self, opts):
         super(MedTransforms, self).__init__(opts)
-        self.mean = [0.5, 0.5, 0.5]
-        self.std = [0.5, 0.5, 0.5]
+        img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
+        self.mean = [0.5] * img_chn
+        self.std = [0.5] * img_chn
 
     def get_transforms(self):
         angles = [0, 90, 180, 270]
@@ -81,9 +82,9 @@ class MedTransforms(TransformsConfig):
 
         transforms_dict = {
             'transform_gt_train': transforms.Compose([
+                transforms.ToTensor(),
                 t_random_rotation,
                 transforms.RandomHorizontalFlip(),
-                transforms.ToTensor(),
                 transforms.Normalize(self.mean, self.std)]),
             'transform_source': None,
             'transform_test': transforms.Compose([

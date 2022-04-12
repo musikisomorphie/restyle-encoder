@@ -44,7 +44,10 @@ class Coach:
 		self.avg_image = self.avg_image.to(self.device).float().detach()
 		if self.opts.dataset_type == "cars_encode":
 			self.avg_image = self.avg_image[:, 32:224, :]
-		common.tensor2im(self.avg_image).save(os.path.join(self.opts.exp_dir, 'avg_image.jpg'))
+		for i in range(self.avg_image.shape[0] // 3):
+			avg = self.avg_image[i * 3 : (i + 1) * 3].clone()
+			common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
+													'avg_image{}.jpg'.format(i)))
 
 		# Initialize loss
 		if self.opts.id_lambda > 0 and self.opts.moco_lambda > 0:
@@ -265,10 +268,14 @@ class Coach:
 			loss_dict['loss_w_norm'] = float(loss_w_norm)
 			loss += loss_w_norm * self.opts.w_norm_lambda
 		if self.opts.moco_lambda > 0:
-			loss_moco, sim_improvement, id_logs = self.moco_loss(y_hat, y, x)
-			loss_dict['loss_moco'] = float(loss_moco)
-			loss_dict['id_improve'] = float(sim_improvement)
-			loss += loss_moco * self.opts.moco_lambda
+			for i in range(x.shape[1] // 3):
+				moco = self.moco_loss(y_hat[:, i*3:(i+1)*3], 
+									  y[:, i*3:(i+1)*3], 
+									  x[:, i*3:(i+1)*3])
+				loss_moco, sim_improvement, id_logs = moco
+				loss_dict['loss_moco'] = float(loss_moco)
+				loss_dict['id_improve'] = float(sim_improvement)
+				loss += loss_moco * self.opts.moco_lambda
 
 		loss_dict['loss'] = float(loss)
 		return loss, loss_dict, id_logs
@@ -284,6 +291,16 @@ class Coach:
 
 	def parse_and_log_images(self, id_logs, x, y, y_hat, title, subscript=None, display_count=2):
 		y = linspace(y[0], y[1], y.shape[0])
+		if 'rxrx19b' in self.opts.dataset_type:
+			x = torch.cat([x[:,:3].clone(),
+							x[:,3:].clone()], -1)
+			y = torch.cat([y[:,:3].clone(),
+							y[:,3:].clone()], -1)
+			for i in range(display_count):
+				for iter_idx in range(len(y_hat[i])):
+					y_h = y_hat[i][iter_idx][0].clone()
+					y_hat[i][iter_idx][0] = torch.cat([y_h[:3].clone(),
+							   		   				   y_h[3:].clone()], -1)
 		im_data = []
 		for i in range(display_count):
 			if type(y_hat) == dict:

@@ -338,14 +338,14 @@ class StyledConv(nn.Module):
 
 
 class ToRGB(nn.Module):
-    def __init__(self, in_channel, style_dim, upsample=True, blur_kernel=[1, 3, 3, 1]):
+    def __init__(self, in_channel, style_dim, upsample=True, blur_kernel=[1, 3, 3, 1], img_chn=3):
         super().__init__()
 
         if upsample:
             self.upsample = Upsample(blur_kernel)
 
-        self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
-        self.bias = nn.Parameter(torch.zeros(1, 3, 1, 1))
+        self.conv = ModulatedConv2d(in_channel, img_chn, 1, style_dim, demodulate=False)
+        self.bias = nn.Parameter(torch.zeros(1, img_chn, 1, 1))
 
     def forward(self, input, style, skip=None):
         out = self.conv(input, style)
@@ -368,6 +368,7 @@ class Generator(nn.Module):
             channel_multiplier=2,
             blur_kernel=[1, 3, 3, 1],
             lr_mlp=0.01,
+            img_chn=3
     ):
         super().__init__()
 
@@ -402,7 +403,7 @@ class Generator(nn.Module):
         self.conv1 = StyledConv(
             self.channels[4], self.channels[4], 3, style_dim, blur_kernel=blur_kernel
         )
-        self.to_rgb1 = ToRGB(self.channels[4], style_dim, upsample=False)
+        self.to_rgb1 = ToRGB(self.channels[4], style_dim, upsample=False, img_chn=img_chn)
 
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
@@ -439,7 +440,7 @@ class Generator(nn.Module):
                 )
             )
 
-            self.to_rgbs.append(ToRGB(out_channel, style_dim))
+            self.to_rgbs.append(ToRGB(out_channel, style_dim, img_chn=img_chn))
 
             in_channel = out_channel
 
@@ -613,7 +614,7 @@ class ResBlock(nn.Module):
 
 
 class Discriminator(nn.Module):
-    def __init__(self, size, channel_multiplier=2, blur_kernel=[1, 3, 3, 1]):
+    def __init__(self, size, channel_multiplier=2, blur_kernel=[1, 3, 3, 1], img_chn=3):
         super().__init__()
 
         channels = {
@@ -628,7 +629,7 @@ class Discriminator(nn.Module):
             1024: 16 * channel_multiplier,
         }
 
-        convs = [ConvLayer(3, channels[size], 1)]
+        convs = [ConvLayer(img_chn, channels[size], 1)]
 
         log_size = int(math.log(size, 2))
 

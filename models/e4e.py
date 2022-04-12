@@ -9,6 +9,7 @@ from models.stylegan2.model import Generator
 from configs.paths_config import model_paths
 from models.encoders import restyle_e4e_encoders
 from utils.model_utils import RESNET_MAPPING
+from utils.data_utils import linspace
 
 
 class e4e(nn.Module):
@@ -19,7 +20,8 @@ class e4e(nn.Module):
         self.n_styles = int(math.log(self.opts.output_size, 2)) * 2 - 2
         # Define architecture
         self.encoder = self.set_encoder()
-        self.decoder = Generator(self.opts.output_size, 512, 8, channel_multiplier=2)
+        img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
+        self.decoder = Generator(self.opts.output_size, 512, 8, channel_multiplier=2, img_chn=img_chn)
         self.face_pool = torch.nn.AdaptiveAvgPool2d((256, 256))
         # Load weights if needed
         self.load_weights()
@@ -41,15 +43,15 @@ class e4e(nn.Module):
             self.decoder.load_state_dict(self.__get_keys(ckpt, 'decoder'), strict=True)
             self.__load_latent_avg(ckpt)
         else:
-            encoder_ckpt = self.__get_encoder_checkpoint()
-            self.encoder.load_state_dict(encoder_ckpt, strict=False)
+            # encoder_ckpt = self.__get_encoder_checkpoint()
+            # self.encoder.load_state_dict(encoder_ckpt, strict=False)
             print(f'Loading decoder weights from pretrained path: {self.opts.stylegan_weights}')
             ckpt = torch.load(self.opts.stylegan_weights)
             self.decoder.load_state_dict(ckpt['g_ema'], strict=True)
             self.__load_latent_avg(ckpt, repeat=self.n_styles)
 
-    def forward(self, x, latent=None, resize=True, latent_mask=None, input_code=False, randomize_noise=True,
-                inject_latent=None, return_latents=False, alpha=None, average_code=False, input_is_full=False):
+    def forward(self, x, latent=None, resize=False, latent_mask=None, input_code=False, randomize_noise=True,
+                inject_latent=None, return_latents=False, alpha=None, average_code=False, input_is_full=False, interp=False):
         if input_code:
             codes = x
         else:
@@ -71,6 +73,11 @@ class e4e(nn.Module):
                         codes[:, i] = inject_latent[:, i]
                 else:
                     codes[:, i] = 0
+        if interp:
+            codes = linspace(codes[0],
+                             codes[1],
+                             codes.shape[0])
+
 
         if average_code:
             input_is_latent = True

@@ -23,11 +23,15 @@ class ImagesDataset(Dataset):
     def __getitem__(self, index):
         from_path = self.source_paths[index]
         to_path = self.target_paths[index]
-        from_im = Image.open(from_path)
-        to_im = Image.open(to_path)
-        if 'ham10k' in str(from_path):
-            from_im = from_im.resize((64, 64)).resize((256, 256))
-            to_im = to_im.resize((64, 64)).resize((256, 256))
+        from_im = np.asarray(Image.open(from_path))
+        to_im = np.asarray(Image.open(to_path))
+
+        if 'rxrx19b' in str(from_path):
+            col = from_im.shape[1] // 2
+            from_im = np.concatenate((from_im[:, :col],
+                                      from_im[:, col:]), axis=-1)
+            to_im = np.concatenate((to_im[:, :col],
+                                    to_im[:, col:]), axis=-1)
 
         if self.target_transform:
             to_im = self.target_transform(to_im)

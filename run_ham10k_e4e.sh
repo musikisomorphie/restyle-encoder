@@ -1,7 +1,7 @@
-python scripts/train_restyle_psp.py \
+python scripts/train_restyle_e4e.py \
 --dataset_type=ham10k \
---encoder_type=ResNetBackboneEncoder \
---exp_dir=Experiment/non_IID/ham10k_psp \
+--encoder_type=ResNetProgressiveBackboneEncoder \
+--exp_dir=Experiment/non_IID/ham10k_e4e \
 --max_steps=100000 \
 --workers=8 \
 --batch_size=8 \
@@ -13,7 +13,11 @@ python scripts/train_restyle_psp.py \
 --lpips_lambda=0 \
 --l2_lambda=10 \
 --moco_lambda=0.5 \
---w_norm_lambda=0 \
+--delta_norm_lambda=0.0002 \
+--use_w_pool \
+--w_discriminator_lambda=0.1 \
+--progressive_start=20000 \
+--progressive_step_every=2000 \
 --input_nc=6 \
 --n_iters_per_batch=1 \
 --output_size=128 \
