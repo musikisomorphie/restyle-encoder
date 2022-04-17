@@ -1,14 +1,15 @@
 python scripts/train_restyle_e4e.py \
 --dataset_type=rxrx19b \
 --encoder_type=ResNetProgressiveBackboneEncoder \
---exp_dir=Experiment/non_IID/rxrx19b_e4e \
---max_steps=1000000 \
+--exp_dir=Experiment/non_IID/rxrx19b_e4e_4 \
+--max_steps=800000 \
 --workers=8 \
 --batch_size=8 \
 --test_batch_size=8 \
 --test_workers=8 \
 --val_interval=5000 \
 --save_interval=10000 \
+--image_interval=10000 \
 --start_from_latent_avg \
 --lpips_lambda=0 \
 --l2_lambda=50 \
@@ -22,4 +23,112 @@ python scripts/train_restyle_e4e.py \
 --n_iters_per_batch=1 \
 --output_size=128 \
 --train_decoder=False \
---stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/060000.pt
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/400000.pt
+
+python scripts/train_restyle_e4e.py \
+--dataset_type=rxrx19b \
+--encoder_type=ResNetProgressiveBackboneEncoder \
+--exp_dir=Experiment/non_IID/rxrx19b_e4e_3 \
+--max_steps=800000 \
+--workers=8 \
+--batch_size=8 \
+--test_batch_size=8 \
+--test_workers=8 \
+--val_interval=5000 \
+--save_interval=10000 \
+--image_interval=10000 \
+--start_from_latent_avg \
+--lpips_lambda=0 \
+--l2_lambda=50 \
+--moco_lambda=0.5 \
+--delta_norm_lambda=0.0002 \
+--use_w_pool \
+--w_discriminator_lambda=0.1 \
+--progressive_start=20000 \
+--progressive_step_every=2000 \
+--input_nc=12 \
+--n_iters_per_batch=1 \
+--output_size=128 \
+--train_decoder=False \
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/300000.pt
+
+python scripts/train_restyle_e4e.py \
+--dataset_type=rxrx19b \
+--encoder_type=ResNetProgressiveBackboneEncoder \
+--exp_dir=Experiment/non_IID/rxrx19b_e4e_2 \
+--max_steps=800000 \
+--workers=8 \
+--batch_size=8 \
+--test_batch_size=8 \
+--test_workers=8 \
+--val_interval=5000 \
+--save_interval=10000 \
+--image_interval=10000 \
+--start_from_latent_avg \
+--lpips_lambda=0 \
+--l2_lambda=50 \
+--moco_lambda=0.5 \
+--delta_norm_lambda=0.0002 \
+--use_w_pool \
+--w_discriminator_lambda=0.1 \
+--progressive_start=20000 \
+--progressive_step_every=2000 \
+--input_nc=12 \
+--n_iters_per_batch=1 \
+--output_size=128 \
+--train_decoder=False \
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/200000.pt
+
+python scripts/train_restyle_e4e.py \
+--dataset_type=rxrx19b \
+--encoder_type=ResNetProgressiveBackboneEncoder \
+--exp_dir=Experiment/non_IID/rxrx19b_e4e_1 \
+--max_steps=800000 \
+--workers=8 \
+--batch_size=8 \
+--test_batch_size=8 \
+--test_workers=8 \
+--val_interval=5000 \
+--save_interval=10000 \
+--image_interval=10000 \
+--start_from_latent_avg \
+--lpips_lambda=0 \
+--l2_lambda=50 \
+--moco_lambda=0.5 \
+--delta_norm_lambda=0.0002 \
+--use_w_pool \
+--w_discriminator_lambda=0.1 \
+--progressive_start=20000 \
+--progressive_step_every=2000 \
+--input_nc=12 \
+--n_iters_per_batch=1 \
+--output_size=128 \
+--train_decoder=False \
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/100000.pt
+
+python scripts/train_restyle_e4e.py \
+--dataset_type=rxrx19b \
+--encoder_type=ResNetProgressiveBackboneEncoder \
+--exp_dir=Experiment/non_IID/rxrx19b_e4e_0 \
+--max_steps=800000 \
+--workers=8 \
+--batch_size=8 \
+--test_batch_size=8 \
+--test_workers=8 \
+--val_interval=5000 \
+--save_interval=10000 \
+--image_interval=10000 \
+--start_from_latent_avg \
+--lpips_lambda=0 \
+--l2_lambda=50 \
+--moco_lambda=0.5 \
+--delta_norm_lambda=0.0002 \
+--use_w_pool \
+--w_discriminator_lambda=0.1 \
+--progressive_start=20000 \
+--progressive_step_every=2000 \
+--input_nc=12 \
+--n_iters_per_batch=1 \
+--output_size=128 \
+--train_decoder=False \
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/000000.pt
