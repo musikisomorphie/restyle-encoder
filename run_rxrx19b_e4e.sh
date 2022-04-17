@@ -23,7 +23,7 @@ python scripts/train_restyle_e4e.py \
 --n_iters_per_batch=1 \
 --output_size=128 \
 --train_decoder=False \
---stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/400000.pt
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/checkpoint/400000.pt
 
 python scripts/train_restyle_e4e.py \
 --dataset_type=rxrx19b \
@@ -50,7 +50,7 @@ python scripts/train_restyle_e4e.py \
 --n_iters_per_batch=1 \
 --output_size=128 \
 --train_decoder=False \
---stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/300000.pt
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/checkpoint/300000.pt
 
 python scripts/train_restyle_e4e.py \
 --dataset_type=rxrx19b \
@@ -77,7 +77,7 @@ python scripts/train_restyle_e4e.py \
 --n_iters_per_batch=1 \
 --output_size=128 \
 --train_decoder=False \
---stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/200000.pt
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/checkpoint/200000.pt
 
 python scripts/train_restyle_e4e.py \
 --dataset_type=rxrx19b \
@@ -104,7 +104,7 @@ python scripts/train_restyle_e4e.py \
 --n_iters_per_batch=1 \
 --output_size=128 \
 --train_decoder=False \
---stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/100000.pt
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/checkpoint/100000.pt
 
 python scripts/train_restyle_e4e.py \
 --dataset_type=rxrx19b \
@@ -131,4 +131,4 @@ python scripts/train_restyle_e4e.py \
 --n_iters_per_batch=1 \
 --output_size=128 \
 --train_decoder=False \
---stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/000000.pt
+--stylegan_weights=Data/non_IID/encoder/rxrx19b_cell/checkpoint/000000.pt
