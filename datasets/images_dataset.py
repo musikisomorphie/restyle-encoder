@@ -33,6 +33,10 @@ class ImagesDataset(Dataset):
             to_im = np.concatenate((to_im[:, :col],
                                     to_im[:, col:]), axis=-1)
 
+            if self.opts.input_ch != -1:
+                from_im = np.expand_dims(from_im[:, :, self.opts.input_ch], -1)
+                to_im = np.expand_dims(to_im[:, :, self.opts.input_ch], -1)
+
         if self.target_transform:
             to_im = self.target_transform(to_im)
 

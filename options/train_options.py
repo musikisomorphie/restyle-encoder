@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 
+
 class TrainOptions:
 
     def __init__(self):
@@ -14,6 +15,9 @@ class TrainOptions:
                                  help='Type of dataset/experiment to run')
         self.parser.add_argument('--encoder_type', default='BackboneEncoder', type=str,
                                  help='Which encoder to use')
+        self.parser.add_argument('--input_ch', default=-1, type=int,
+                                 choices=[0, 1, 2, 3, 4, 5, -1],
+                                 help='the channel of rxrx19b image fed to the ReStyle encoder')
         self.parser.add_argument('--input_nc', default=6, type=int,
                                  help='Number of input image channels to the ReStyle encoder. Should be set to 6.')
         self.parser.add_argument('--output_size', default=1024, type=int,

@@ -46,10 +46,15 @@ class Coach:
 		self.avg_image = self.avg_image.to(self.device).float().detach()
 		if self.opts.dataset_type == "cars_encode":
 			self.avg_image = self.avg_image[:, 32:224, :]
-		for i in range(self.avg_image.shape[0] // 3):
-			avg = self.avg_image[i * 3 : (i + 1) * 3].clone()
+		if self.avg_image.shape[0] == 1:
+			avg = self.avg_image.clone()
 			common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
-													'avg_image{}.jpg'.format(i)))
+													'avg_image0.jpg'))
+		else:
+			for i in range(self.avg_image.shape[0] // 3):
+				avg = self.avg_image[i * 3 : (i + 1) * 3].clone()
+				common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
+														'avg_image{}.jpg'.format(i)))
 
 		# Initialize loss
 		if self.opts.id_lambda > 0 and self.opts.moco_lambda > 0:
@@ -332,6 +337,10 @@ class Coach:
 			loss_dict['loss_lpips'] = float(loss_lpips)
 			loss += loss_lpips * self.opts.lpips_lambda
 		if self.opts.moco_lambda > 0:
+			if x.shape[1] == 1:
+				x = x.repeat(1, 3, 1, 1)
+				y = y.repeat(1, 3, 1, 1)
+				y_hat = y_hat.repeat(1, 3, 1, 1)
 			for i in range(x.shape[1] // 3):
 				moco = self.moco_loss(y_hat[:, i*3:(i+1)*3], 
 									  y[:, i*3:(i+1)*3], 
@@ -381,15 +390,16 @@ class Coach:
 	def parse_and_log_images(self, id_logs, x, y, y_hat, title, subscript=None, display_count=2):
 		y = linspace(y[0], y[1], y.shape[0])
 		if 'rxrx19b' in self.opts.dataset_type:
-			x = torch.cat([x[:,:3].clone(),
-							x[:,3:].clone()], -1)
-			y = torch.cat([y[:,:3].clone(),
-							y[:,3:].clone()], -1)
-			for i in range(display_count):
-				for iter_idx in range(len(y_hat[i])):
-					y_h = y_hat[i][iter_idx][0].clone()
-					y_hat[i][iter_idx][0] = torch.cat([y_h[:3].clone(),
-							   		   				   y_h[3:].clone()], -1)
+			if self.opts.input_ch == -1:
+				x = torch.cat([x[:,:3].clone(),
+								x[:,3:].clone()], -1)
+				y = torch.cat([y[:,:3].clone(),
+								y[:,3:].clone()], -1)
+				for i in range(display_count):
+					for iter_idx in range(len(y_hat[i])):
+						y_h = y_hat[i][iter_idx][0].clone()
+						y_hat[i][iter_idx][0] = torch.cat([y_h[:3].clone(),
+														y_h[3:].clone()], -1)
 		im_data = []
 		for i in range(display_count):
 			if type(y_hat) == dict:

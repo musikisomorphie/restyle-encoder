@@ -19,7 +19,9 @@ class pSp(nn.Module):
         self.n_styles = int(math.log(self.opts.output_size, 2)) * 2 - 2
         # Define architecture
         self.encoder = self.set_encoder()
-        img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
+        if 'rxrx19b' in self.opts.dataset_type:
+            img_chn = 6 if self.opts.input_ch == -1 else 1
+        # img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
         self.decoder = Generator(self.opts.output_size, 512, 8, channel_multiplier=2, img_chn=img_chn)
         self.face_pool = torch.nn.AdaptiveAvgPool2d((256, 256))
         # Load weights if needed
