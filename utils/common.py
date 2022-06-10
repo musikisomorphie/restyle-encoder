@@ -9,6 +9,7 @@ def tensor2im(var, alpha=2, beta=0):
 	var[var < 0] = 0
 	var[var > 1] = 1
 	var = var * 255
+	print(var.shape)
 	if var.shape[1] != var.shape[0]:
 		var = alpha * var + beta
 		var = np.clip(var, 0, 255)
