@@ -82,15 +82,12 @@ class ResNetBackboneEncoder(Module):
         self.styles = nn.ModuleList()
         self.style_count = n_styles
         self.input_ch = opts.input_ch
-        if self.input_ch == -1:
-            for i in range(self.style_count):
+        for i in range(self.style_count):
+            if self.input_ch == -1:
                 style = GradualStyleBlock(512, 512, 16)
-                self.styles.append(style)
-            print(f'all channels with {len(self.styles)} styles block.')
-        else:
-            self.styles.append(GradualStyleBlock(512, 512, 16))
-            self.styles.append(GradualStyleBlock(512, 512, 16))
-            print(f'single channel with {len(self.styles)} styles block.')
+            else:
+                style = GradualStyleBlock(512, 128, 16)
+            self.styles.append(style)
 
     def forward(self, x):
         x = self.conv1(x)
@@ -98,16 +95,13 @@ class ResNetBackboneEncoder(Module):
         x = self.relu(x)
         x = self.body(x)
         latents = []
-        if self.input_ch == -1:
-            for j in range(self.style_count):
-                latents.append(self.styles[j](x))
-        else:
-            assert len(self.styles) == 2
-            sty0 = self.styles[0](x)
-            sty1 = self.styles[1](x)
-            for j in range(self.style_count // 2):
-                latents.append(sty0)
-                latents.append(sty1)
+        
+        for j in range(self.style_count):
+            sty = self.styles[j](x)
+            if self.input_ch == -1:
+                latents.append(sty)
+            else:
+                latents.append(sty.repeat(1, 4))
         out = torch.stack(latents, dim=1)
         return out
 
