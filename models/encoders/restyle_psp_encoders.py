@@ -81,7 +81,8 @@ class ResNetBackboneEncoder(Module):
 
         self.styles = nn.ModuleList()
         self.style_count = n_styles
-        if self.opts.input_ch == -1:
+        self.input_ch = opts.input_ch
+        if self.input_ch == -1:
             for i in range(self.style_count):
                 style = GradualStyleBlock(512, 512, 16)
                 self.styles.append(style)
@@ -97,7 +98,7 @@ class ResNetBackboneEncoder(Module):
         x = self.relu(x)
         x = self.body(x)
         latents = []
-        if self.opts.input_ch == -1:
+        if self.input_ch == -1:
             for j in range(self.style_count):
                 latents.append(self.styles[j](x))
         else:
