@@ -19,6 +19,7 @@ class pSp(nn.Module):
         self.n_styles = int(math.log(self.opts.output_size, 2)) * 2 - 2
         # Define architecture
         self.encoder = self.set_encoder()
+        img_chn = 3
         if 'rxrx19b' in self.opts.dataset_type:
             img_chn = 6 if self.opts.input_ch == -1 else 1
         # img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
