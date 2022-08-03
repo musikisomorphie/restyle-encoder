@@ -44,15 +44,19 @@ class Coach:
 		self.avg_image = self.avg_image.to(self.device).float().detach()
 		if self.opts.dataset_type == "cars_encode":
 			self.avg_image = self.avg_image[:, 32:224, :]
-		if self.avg_image.shape[0] == 1:
-			avg = self.avg_image.clone()
+
+		avg = self.avg_image.clone()
+		if avg.shape[0] == 1:
 			common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
 													'avg_image0.jpg'))
 		else:
-			for i in range(self.avg_image.shape[0] // 3):
-				avg = self.avg_image[i * 3 : (i + 1) * 3].clone()
-				common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
-														'avg_image{}.jpg'.format(i)))
+			if avg.shape[0] == 5:
+				mito = -torch.ones(1, avg.shape[1], avg.shape[2])
+				avg = torch.cat((avg, mito.to(avg)), dim=1)
+				
+			for i in range(avg.shape[0] // 3):
+				common.tensor2im(avg[i * 3 : (i + 1) * 3]).save(os.path.join(self.opts.exp_dir, 
+																'avg_image{}.jpg'.format(i)))
 
 		# Initialize loss
 		if self.opts.id_lambda > 0 and self.opts.moco_lambda > 0:
