@@ -68,8 +68,11 @@ class MedTransforms(TransformsConfig):
     def __init__(self, opts):
         super(MedTransforms, self).__init__(opts)
         img_chn = 3
-        if 'rxrx19b' in self.opts.dataset_type:
-            img_chn = 6 if self.opts.input_ch == -1 else 1
+        if 'rxrx19' in self.opts.dataset_type:
+            if self.opts.input_ch == -1:
+                img_chn = 5 if 'rxrx19a' in self.opts.dataset_type else 6
+            else:
+                img_chn = 1
         # img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
         self.mean = [0.5] * img_chn
         self.std = [0.5] * img_chn

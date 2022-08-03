@@ -23,7 +23,7 @@ def parse_args():
 
     parser.add_argument('--data_name',
                         type=str,
-                        choices=['rxrx19b', 'ham10k'],
+                        choices=['rxrx19a_HRCE', 'rxrx19b_VERO', 'rxrx19b', 'ham10k'],
                         help='experiments to run')
     parser.add_argument('--data_splt',
                         type=str,

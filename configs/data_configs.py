@@ -58,5 +58,19 @@ DATASETS = {
         'train_target_root': dataset_paths['rxrx19b'],
         'test_source_root': dataset_paths['rxrx19b'],
         'test_target_root': dataset_paths['rxrx19b']
+    },
+	'rxrx19a_HRCE': {
+        'transforms': transforms_config.MedTransforms,
+        'train_source_root': dataset_paths['rxrx19a_HRCE'],
+        'train_target_root': dataset_paths['rxrx19a_HRCE'],
+        'test_source_root': dataset_paths['rxrx19a_HRCE'],
+        'test_target_root': dataset_paths['rxrx19a_HRCE']
+    },
+	'rxrx19a_VERO': {
+        'transforms': transforms_config.MedTransforms,
+        'train_source_root': dataset_paths['rxrx19a_VERO'],
+        'train_target_root': dataset_paths['rxrx19a_VERO'],
+        'test_source_root': dataset_paths['rxrx19a_VERO'],
+        'test_target_root': dataset_paths['rxrx19a_VERO']
     }
 }

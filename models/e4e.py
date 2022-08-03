@@ -21,8 +21,13 @@ class e4e(nn.Module):
         # Define architecture
         self.encoder = self.set_encoder()
         img_chn = 3
-        if 'rxrx19b' in self.opts.dataset_type:
-            img_chn = 6 if self.opts.input_ch == -1 else 1
+        if 'rxrx19' in self.opts.dataset_type:
+            if self.opts.input_ch == -1:
+                img_chn = 5 if 'rxrx19a' in self.opts.dataset_type else 6
+            else:
+                img_chn = 1
+        # if 'rxrx19b' in self.opts.dataset_type:
+        #     img_chn = 6 if self.opts.input_ch == -1 else 1
         # img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
         self.decoder = Generator(self.opts.output_size, 512, 8, channel_multiplier=2, img_chn=img_chn)
         self.face_pool = torch.nn.AdaptiveAvgPool2d((256, 256))

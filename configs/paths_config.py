@@ -15,7 +15,9 @@ dataset_paths = {
 	'afhq_wild_test': '',
 
 	'ham10k': 'Data/non_IID/preproc/ham10k_tiny/images/',
-    'rxrx19b': 'Data/non_IID/preproc/rxrx19b_cell/images/'
+    'rxrx19b': 'Data/non_IID/preproc/rxrx19b_cell/images/',
+	'rxrx19a_HRCE': 'Data/non_IID/preproc/rxrx19a_HRCE_cell/images/',
+	'rxrx19a_VERO': 'Data/non_IID/preproc/rxrx19a_VERO_cell/images/',
 }
 
 model_paths = {

@@ -277,6 +277,12 @@ class Coach:
 				x = x.repeat(1, 3, 1, 1)
 				y = y.repeat(1, 3, 1, 1)
 				y_hat = y_hat.repeat(1, 3, 1, 1)
+			elif x.shape[1] == 5:
+				mito = -torch.ones(x.shape[0], 1, 
+								   x.shape[2], x.shape[3])
+				x = torch.cat((x, mito.to(x)), dim=1)
+				y = torch.cat((y, mito.to(y)), dim=1)
+				y_hat = torch.cat((y_hat, mito.to(y_hat)), dim=1)
 			for i in range(x.shape[1] // 3):
 				moco = self.moco_loss(y_hat[:, i*3:(i+1)*3], 
 									  y[:, i*3:(i+1)*3], 
@@ -300,17 +306,25 @@ class Coach:
 
 	def parse_and_log_images(self, id_logs, x, y, y_hat, title, subscript=None, display_count=2):
 		y = linspace(y[0], y[1], y.shape[0])
-		if 'rxrx19b' in self.opts.dataset_type:
+		if 'rxrx19' in self.opts.dataset_type:
 			if self.opts.input_ch == -1:
+				if 'rxrx19a' in self.opts.dataset_type:
+					assert x.shape[1] == 5 and y.shape[1] == 5
+					mito = -torch.ones(x.shape[0], 1, 
+									   x.shape[2], x.shape[3])
+					x = torch.cat((x, mito.to(x)), dim=1)
+					y = torch.cat((y, mito.to(y)), dim=1)
 				x = torch.cat([x[:,:3].clone(),
-								x[:,3:].clone()], -1)
+							   x[:,3:].clone()], -1)
 				y = torch.cat([y[:,:3].clone(),
-								y[:,3:].clone()], -1)
+							   y[:,3:].clone()], -1)
 				for i in range(display_count):
 					for iter_idx in range(len(y_hat[i])):
 						y_h = y_hat[i][iter_idx][0].clone()
+						if 'rxrx19a' in self.opts.dataset_type:
+							y_h = torch.cat((y_h, mito.to(y_h)), dim=1)
 						y_hat[i][iter_idx][0] = torch.cat([y_h[:3].clone(),
-														y_h[3:].clone()], -1)
+														   y_h[3:].clone()], -1)
 		im_data = []
 		for i in range(display_count):
 			if type(y_hat) == dict:
