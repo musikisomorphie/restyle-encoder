@@ -54,7 +54,7 @@ class Coach:
 		else:
 			if avg.shape[0] == 5:
 				mito = -torch.ones(1, avg.shape[1], avg.shape[2])
-				avg = torch.cat((avg, mito.to(avg)), dim=1)
+				avg = torch.cat((avg, mito.to(avg)), dim=0)
 				
 			for i in range(avg.shape[0] // 3):
 				common.tensor2im(avg[i * 3 : (i + 1) * 3]).save(os.path.join(self.opts.exp_dir, 
