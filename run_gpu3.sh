@@ -15,7 +15,7 @@ python scripts/train_restyle_psp.py \
 --l2_lambda=50 \
 --moco_lambda=0.5 \
 --w_norm_lambda=0 \
---input_nc=2 \
+--input_nc=10 \
 --input_ch=-1 \
 --n_iters_per_batch=1 \
 --output_size=128 \
