@@ -326,7 +326,8 @@ class Coach:
 					for iter_idx in range(len(y_hat[i])):
 						y_h = y_hat[i][iter_idx][0].clone()
 						if 'rxrx19a' in self.opts.dataset_type:
-							y_h = torch.cat((y_h, mito.to(y_h)), dim=1)
+							# y_h is a single image with [1, d, d]
+							y_h = torch.cat((y_h, mito[0].to(y_h)), dim=1)
 						y_hat[i][iter_idx][0] = torch.cat([y_h[:3].clone(),
 														   y_h[3:].clone()], -1)
 		im_data = []
