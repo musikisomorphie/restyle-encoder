@@ -59,6 +59,13 @@ DATASETS = {
         'test_source_root': dataset_paths['rxrx19b'],
         'test_target_root': dataset_paths['rxrx19b']
     },
+	'rxrx19b_HUVEC': {
+        'transforms': transforms_config.MedTransforms,
+        'train_source_root': dataset_paths['rxrx19b_HUVEC'],
+        'train_target_root': dataset_paths['rxrx19b_HUVEC'],
+        'test_source_root': dataset_paths['rxrx19b_HUVEC'],
+        'test_target_root': dataset_paths['rxrx19b_HUVEC']
+    },
 	'rxrx19a_HRCE': {
         'transforms': transforms_config.MedTransforms,
         'train_source_root': dataset_paths['rxrx19a_HRCE'],
