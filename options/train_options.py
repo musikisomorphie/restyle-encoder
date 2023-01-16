@@ -38,7 +38,7 @@ class TrainOptions:
                                  help='Optimizer learning rate')
         self.parser.add_argument('--optim_name', default='ranger', type=str,
                                  help='Which optimizer to use')
-        self.parser.add_argument('--train_decoder', default=False, type=bool,
+        self.parser.add_argument('--train_decoder', action='store_true',
                                  help='Whether to train the decoder model')
         self.parser.add_argument('--start_from_latent_avg', action='store_true',
                                  help='Whether to add average latent vector to generate codes from encoder.')

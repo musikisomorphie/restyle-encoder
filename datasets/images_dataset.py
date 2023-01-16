@@ -23,8 +23,8 @@ class ImagesDataset(Dataset):
     def __getitem__(self, index):
         from_path = self.source_paths[index]
         to_path = self.target_paths[index]
-        from_im = np.asarray(Image.open(from_path))
-        to_im = np.asarray(Image.open(to_path))
+        from_im = np.array(Image.open(from_path))
+        to_im = np.array(Image.open(to_path))
 
         if 'rxrx19' in str(from_path):
             col = from_im.shape[1] // 2
