@@ -1,7 +1,7 @@
-CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
+CUDA_VISIBLE_DEVICES=1 python -m scripts.train_restyle_psp \
 --dataset_type=NSTG \
 --encoder_type=ResNetBackboneEncoder \
---exp_dir=Data/NSTG/GAN/encoder0 \
+--exp_dir=Data/NSTG/GAN/encoder2 \
 --max_steps=800000 \
 --workers=8 \
 --batch_size=8 \
@@ -19,12 +19,13 @@ CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
 --input_ch=-1 \
 --n_iters_per_batch=1 \
 --output_size=128 \
---stylegan_weights=Data/NSTG/GAN/decoder0/checkpoint/400000.pt
+--stylegan_weights=Data/NSTG/GAN/decoder2/checkpoint/400000.pt \
+--train_decoder
 
-CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
+CUDA_VISIBLE_DEVICES=1 python -m scripts.train_restyle_psp \
 --dataset_type=NSTG \
 --encoder_type=ResNetBackboneEncoder \
---exp_dir=Data/NSTG/GAN/encoder1 \
+--exp_dir=Data/NSTG/GAN/encoder3 \
 --max_steps=800000 \
 --workers=8 \
 --batch_size=8 \
@@ -42,4 +43,5 @@ CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
 --input_ch=-1 \
 --n_iters_per_batch=1 \
 --output_size=128 \
---stylegan_weights=Data/NSTG/GAN/decoder1/checkpoint/400000.pt
+--stylegan_weights=Data/NSTG/GAN/decoder3/checkpoint/400000.pt \
+--train_decoder
