@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0 python scripts/train_restyle_psp.py \
+CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
 --dataset_type=NSTG \
 --encoder_type=ResNetBackboneEncoder \
 --exp_dir=Data/NSTG/GAN/encoder0 \
@@ -21,7 +21,7 @@ CUDA_VISIBLE_DEVICES=0 python scripts/train_restyle_psp.py \
 --output_size=128 \
 --stylegan_weights=Data/NSTG/GAN/decoder0/checkpoint/400000.pt
 
-CUDA_VISIBLE_DEVICES=0 python scripts/train_restyle_psp.py \
+CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
 --dataset_type=NSTG \
 --encoder_type=ResNetBackboneEncoder \
 --exp_dir=Data/NSTG/GAN/encoder1 \
