@@ -19,6 +19,7 @@ dataset_paths = {
 	'rxrx19b_HUVEC': 'Data/non_IID/preproc/rxrx19b_HUVEC_cell/images/',
 	'rxrx19a_HRCE': 'Data/non_IID/preproc/rxrx19a_HRCE_cell/images/',
 	'rxrx19a_VERO': 'Data/non_IID/preproc/rxrx19a_VERO_cell/images/',
+	'NSTG': 'Data/NSTG/GAN/crop'
 }
 
 model_paths = {

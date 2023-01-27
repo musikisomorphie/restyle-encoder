@@ -79,5 +79,12 @@ DATASETS = {
         'train_target_root': dataset_paths['rxrx19a_VERO'],
         'test_source_root': dataset_paths['rxrx19a_VERO'],
         'test_target_root': dataset_paths['rxrx19a_VERO']
+    },
+	'NSTG': {
+        'transforms': transforms_config.MedTransforms,
+        'train_source_root': dataset_paths['NSTG'],
+        'train_target_root': dataset_paths['NSTG'],
+        'test_source_root': dataset_paths['NSTG'],
+        'test_target_root': dataset_paths['NSTG']
     }
 }
