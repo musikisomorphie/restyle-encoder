@@ -26,13 +26,13 @@ class ImagesDataset(Dataset):
         from_im = np.array(Image.open(from_path))
         to_im = np.array(Image.open(to_path))
 
-        if 'rxrx19' in str(from_path):
+        if 'rxrx19' in self.opts.dataset_type:
             col = from_im.shape[1] // 2
             from_im = np.concatenate((from_im[:, :col],
                                       from_im[:, col:]), axis=-1)
             to_im = np.concatenate((to_im[:, :col],
                                     to_im[:, col:]), axis=-1)
-            if 'rxrx19a' in str(from_path):
+            if 'rxrx19a' == self.opts.dataset_type:
                 from_im = from_im[:, :, :-1]
                 to_im = to_im[:, :, :-1]
 
