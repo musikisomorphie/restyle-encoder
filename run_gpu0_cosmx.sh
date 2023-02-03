@@ -1,7 +1,7 @@
 # CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
-# --dataset_type=NSTG \
+# --dataset_type=CosMx \
 # --encoder_type=ResNetBackboneEncoder \
-# --exp_dir=Data/NSTG/GAN/encoderf0 \
+# --exp_dir=Data/CosMx/GAN/encoderf0 \
 # --max_steps=800000 \
 # --workers=8 \
 # --batch_size=8 \
@@ -19,12 +19,12 @@
 # --input_ch=-1 \
 # --n_iters_per_batch=1 \
 # --output_size=128 \
-# --stylegan_weights=Data/NSTG/GAN/decoder0/checkpoint/400000.pt
+# --stylegan_weights=Data/CosMx/GAN/decoder0/checkpoint/400000.pt
 
 # CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
-# --dataset_type=NSTG \
+# --dataset_type=CosMx \
 # --encoder_type=ResNetBackboneEncoder \
-# --exp_dir=Data/NSTG/GAN/encoderf1 \
+# --exp_dir=Data/CosMx/GAN/encoderf1 \
 # --max_steps=800000 \
 # --workers=8 \
 # --batch_size=8 \
@@ -42,12 +42,12 @@
 # --input_ch=-1 \
 # --n_iters_per_batch=1 \
 # --output_size=128 \
-# --stylegan_weights=Data/NSTG/GAN/decoder1/checkpoint/400000.pt
+# --stylegan_weights=Data/CosMx/GAN/decoder1/checkpoint/400000.pt
 
 CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
---dataset_type=NSTG \
+--dataset_type=CosMx \
 --encoder_type=ResNetBackboneEncoder \
---exp_dir=Data/NSTG/GAN/encoderf2 \
+--exp_dir=Data/CosMx/GAN/encoderf2 \
 --max_steps=800000 \
 --workers=8 \
 --batch_size=8 \
@@ -65,12 +65,12 @@ CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
 --input_ch=-1 \
 --n_iters_per_batch=1 \
 --output_size=128 \
---stylegan_weights=Data/NSTG/GAN/decoder2/checkpoint/400000.pt
+--stylegan_weights=Data/CosMx/GAN/decoder2/checkpoint/400000.pt
 
 CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
---dataset_type=NSTG \
+--dataset_type=CosMx \
 --encoder_type=ResNetBackboneEncoder \
---exp_dir=Data/NSTG/GAN/encoderf3 \
+--exp_dir=Data/CosMx/GAN/encoderf3 \
 --max_steps=800000 \
 --workers=8 \
 --batch_size=8 \
@@ -88,4 +88,4 @@ CUDA_VISIBLE_DEVICES=0 python -m scripts.train_restyle_psp \
 --input_ch=-1 \
 --n_iters_per_batch=1 \
 --output_size=128 \
---stylegan_weights=Data/NSTG/GAN/decoder3/checkpoint/400000.pt
+--stylegan_weights=Data/CosMx/GAN/decoder3/checkpoint/400000.pt

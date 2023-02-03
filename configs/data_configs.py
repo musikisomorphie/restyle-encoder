@@ -80,11 +80,11 @@ DATASETS = {
         'test_source_root': dataset_paths['rxrx19a_VERO'],
         'test_target_root': dataset_paths['rxrx19a_VERO']
     },
-	'NSTG': {
+	'CosMx': {
         'transforms': transforms_config.MedTransforms,
-        'train_source_root': dataset_paths['NSTG'],
-        'train_target_root': dataset_paths['NSTG'],
-        'test_source_root': dataset_paths['NSTG'],
-        'test_target_root': dataset_paths['NSTG']
+        'train_source_root': dataset_paths['CosMx'],
+        'train_target_root': dataset_paths['CosMx'],
+        'test_source_root': dataset_paths['CosMx'],
+        'test_target_root': dataset_paths['CosMx']
     }
 }
