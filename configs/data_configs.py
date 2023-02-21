@@ -86,5 +86,12 @@ DATASETS = {
         'train_target_root': dataset_paths['CosMx'],
         'test_source_root': dataset_paths['CosMx'],
         'test_target_root': dataset_paths['CosMx']
+    },
+	'Xenium': {
+        'transforms': transforms_config.MedTransforms,
+        'train_source_root': dataset_paths['Xenium'],
+        'train_target_root': dataset_paths['Xenium'],
+        'test_source_root': dataset_paths['Xenium'],
+        'test_target_root': dataset_paths['Xenium']
     }
 }

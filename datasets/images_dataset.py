@@ -1,14 +1,15 @@
-from torch import from_numpy
-from torch.utils.data import Dataset
-from PIL import Image, ImageFile
-from utils import data_utils
-
 import numpy as np
+
+from pathlib import Path
+from utils import data_utils
+from PIL import Image, ImageFile
+from torch.utils.data import Dataset
+
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-class ImagesDataset(Dataset):
+class ImagesDataset_RxRx19(Dataset):
 
     def __init__(self, source_root, target_root, opts, target_transform=None, source_transform=None):
         self.source_paths = sorted(data_utils.make_dataset(source_root))
@@ -49,3 +50,43 @@ class ImagesDataset(Dataset):
             from_im = to_im
 
         return from_im, to_im
+
+
+class ImagesDataset(Dataset):
+
+    def __init__(self, source_root, target_root, opts, target_transform=None, source_transform=None):
+        assert source_transform is None
+        if 'rxrx19' in self.opts.dataset_type:
+            exts = '*.png'
+        elif self.opts.dataset_type == 'CosMx':
+            exts = '*_cell.png'
+        elif self.opts.dataset_type == 'Xenium':
+            exts = '*_hne.png'
+
+        self.paths = list(Path(target_root).rglob(exts))
+        self.target_transform = target_transform
+        self.opts = opts
+
+    def __len__(self):
+        return len(self.paths)
+
+    def __getitem__(self, index):
+        im = Image.open(str(self.paths[index]))
+        im = np.array(im)
+
+        if 'rxrx19' in self.opts.dataset_type:
+            col = im.shape[1] // 2
+            im = np.concatenate((im[:, :col],
+                                 im[:, col:]), axis=-1)
+            if self.opts.dataset_type == 'rxrx19a':
+                im = im[:, :, :-1]
+
+            if self.opts.input_ch != -1:
+                im = np.expand_dims(im[:, :, self.opts.input_ch], -1)
+
+        if self.target_transform:
+            im = self.target_transform(im)
+
+        # here the first im is a legacy input
+        # which is not very useful in our case
+        return im, im
