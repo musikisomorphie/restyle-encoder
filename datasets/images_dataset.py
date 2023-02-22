@@ -56,11 +56,11 @@ class ImagesDataset(Dataset):
 
     def __init__(self, source_root, target_root, opts, target_transform=None, source_transform=None):
         assert source_transform is None
-        if 'rxrx19' in self.opts.dataset_type:
+        if 'rxrx19' in opts.dataset_type:
             exts = '*.png'
-        elif self.opts.dataset_type == 'CosMx':
+        elif opts.dataset_type == 'CosMx':
             exts = '*_cell.png'
-        elif self.opts.dataset_type == 'Xenium':
+        elif opts.dataset_type == 'Xenium':
             exts = '*_hne.png'
 
         self.paths = list(Path(target_root).rglob(exts))
