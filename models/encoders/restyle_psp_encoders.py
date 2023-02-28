@@ -5,7 +5,7 @@ from torch.nn import Conv2d, BatchNorm2d, PReLU, Sequential, Module
 from torchvision.models.resnet import resnet34
 
 from models.encoders.helpers import get_blocks, bottleneck_IR, bottleneck_IR_SE
-from models.encoders.map2style import GradualStyleBlock
+from models.encoders.map2style import GradualStyleBlock, GradualExprBlock
 
 
 class BackboneEncoder(Module):
@@ -79,31 +79,56 @@ class ResNetBackboneEncoder(Module):
                 modules.append(bottleneck)
         self.body = Sequential(*modules)
 
+        self.input_ch = opts.input_ch
+        self.lat_dim = 256 if self.input_ch == -1 else 128
+        self.lat_rep = 2 if self.input_ch == -1 else 4
+
+        self.rna_tab = False
+        if opts.dataset_type in ('CosMx', 'Xenium'): 
+            self.rna_num = 960 if opts.dataset_type == 'CoxMx' else 280
+            if opts.rna == 'tabular':
+                self.rna_tab = True
+                self.exprs = nn.ModuleList()
+                self.expr_count = n_styles
+                for _ in range(self.expr_count):
+                    expr = GradualExprBlock(self.rna_num, self.lat_dim, 16)
+                    self.exprs.append(expr)
+                self.weight = nn.Parameter(torch.zeros(self.expr_count))
+
         self.styles = nn.ModuleList()
         self.style_count = n_styles
-        self.input_ch = opts.input_ch
-        for i in range(self.style_count):
-            if self.input_ch == -1:
-                style = GradualStyleBlock(512, 512, 16)
-            else:
-                style = GradualStyleBlock(512, 128, 16)
+        for _ in range(self.style_count):
+            style = GradualStyleBlock(512, self.lat_dim, 16)
             self.styles.append(style)
 
-    def forward(self, x):
+    def forward(self, x, rna=None, lat=None):
+        if lat is not None:
+            out = lat
+            if self.rna_tab:
+                exprs = []
+                for i in range(self.style_count):
+                    exr = (self.weight[i] * self.exprs[i](rna))
+                    exprs.append(exr.repeat(1, self.lat_rep))
+                out = lat + torch.stack(exprs, dim=1)
+            return out, lat
+
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
         x = self.body(x)
-        latents = []
-        
-        for j in range(self.style_count):
-            sty = self.styles[j](x)
-            if self.input_ch == -1:
-                latents.append(sty)
+        latents, outputs = [], []
+        for i in range(self.style_count):
+            sty = self.styles[i](x)
+            if self.rna_tab:
+                exr = self.exprs[i](rna)
+                out = sty + self.weight[i] * exr
             else:
-                latents.append(sty.repeat(1, 4))
-        out = torch.stack(latents, dim=1)
-        return out
+                out = sty
+            outputs.append(out.repeat(1, self.lat_rep))
+            latents.append(sty.repeat(1, self.lat_rep))
+        out = torch.stack(outputs, dim=1)
+        lat = torch.stack(latents, dim=1)
+        return out, lat
 
 
 class ResNetBackboneEncoder0(Module):

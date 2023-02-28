@@ -1,3 +1,5 @@
+import torch
+import sparse
 import numpy as np
 
 from pathlib import Path
@@ -57,13 +59,13 @@ class ImagesDataset(Dataset):
     def __init__(self, source_root, target_root, opts, target_transform=None, source_transform=None):
         assert source_transform is None
         if 'rxrx19' in opts.dataset_type:
-            exts = '*.png'
+            self.exts = '*.png'
         elif opts.dataset_type == 'CosMx':
-            exts = '*_cell.png'
+            self.exts = '*_flo.png'
         elif opts.dataset_type == 'Xenium':
-            exts = '*_hne.png'
+            self.exts = '*_hne.png'
 
-        self.paths = list(Path(target_root).rglob(exts))
+        self.paths = list(Path(target_root).rglob(self.exts))
         self.target_transform = target_transform
         self.opts = opts
 
@@ -74,6 +76,7 @@ class ImagesDataset(Dataset):
         im = Image.open(str(self.paths[index]))
         im = np.array(im)
 
+        rna = None
         if 'rxrx19' in self.opts.dataset_type:
             col = im.shape[1] // 2
             im = np.concatenate((im[:, :col],
@@ -83,10 +86,24 @@ class ImagesDataset(Dataset):
 
             if self.opts.input_ch != -1:
                 im = np.expand_dims(im[:, :, self.opts.input_ch], -1)
+        elif self.opts.dataset_type in ('CosMx', 'Xenium'):
+            rna_num = 960 if self.opts.dataset_type == 'CoxMx' else 280
+
+            if self.opts.rna in ('tabular', 'spatial'):
+                rna_pth = str(self.paths[index]).replace(self.exts[1:], '_rna.npz')
+                rna = sparse.load_npz(rna_pth)
+                if self.opts.rna == 'tabular':
+                    # CosMx: 960 rna + 20 negprb, Xenium: 280 rna + 61 negprb + 200 blank
+                    rna = rna[:, :, :rna_num]
+                    rna = rna.sum(axis=[0, 1]).todense().astype(np.float32)
+                    rna = torch.from_numpy(rna)
+                elif self.opts.rna == 'spatial':
+                    # TODO if rna is treated as spatial, be aware of transform
+                    pass
 
         if self.target_transform:
             im = self.target_transform(im)
 
         # here the first im is a legacy input
         # which is not very useful in our case
-        return im, im
+        return im, im, rna

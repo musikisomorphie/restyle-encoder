@@ -11,6 +11,9 @@ class TrainOptions:
         # general setup
         self.parser.add_argument('--exp_dir', type=str,
                                  help='Path to experiment output directory')
+        self.parser.add_argument('--rna', default=None, type=str,
+                                 choices=['tabular', 'spatial'],
+                                 help='Path to experiment output directory')
         self.parser.add_argument('--dataset_type', default='ffhq_encode', type=str,
                                  help='Type of dataset/experiment to run')
         self.parser.add_argument('--encoder_type', default='BackboneEncoder', type=str,

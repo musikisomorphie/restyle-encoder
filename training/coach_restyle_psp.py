@@ -99,7 +99,7 @@ class Coach:
 		if self.opts.save_interval is None:
 			self.opts.save_interval = self.opts.max_steps
 
-	def perform_train_iteration_on_batch(self, x, y):
+	def perform_train_iteration_on_batch(self, x, y, rna):
 		y_hat, latent = None, None
 		loss_dict, id_logs = None, None
 		y_hats = {idx: [] for idx in range(x.shape[0])}
@@ -107,12 +107,12 @@ class Coach:
 			if iter == 0:
 				avg_image_for_batch = self.avg_image.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
 				x_input = torch.cat([x, avg_image_for_batch], dim=1)
-				y_hat, latent = self.net.forward(x_input, latent=None, return_latents=True)
+				y_hat, latent = self.net.forward(x_input, rna=rna, latent=None, return_latents=True)
 			else:
 				y_hat_clone = y_hat.clone().detach().requires_grad_(True)
 				latent_clone = latent.clone().detach().requires_grad_(True)
 				x_input = torch.cat([x, y_hat_clone], dim=1)
-				y_hat, latent = self.net.forward(x_input, latent=latent_clone, return_latents=True)
+				y_hat, latent = self.net.forward(x_input, rna=rna, latent=latent_clone, return_latents=True)
 
 			if self.opts.dataset_type == "cars_encode":
 				y_hat = y_hat[:, :, 32:224, :]
@@ -130,10 +130,12 @@ class Coach:
 		while self.global_step < self.opts.max_steps:
 			for batch_idx, batch in enumerate(self.train_dataloader):
 				self.optimizer.zero_grad()
-				x, y = batch
+				x, y, rna = batch
 				x, y = x.to(self.device).float(), y.to(self.device).float()
+				if rna is not None:
+					rna = rna.to(self.device).float()
 
-				y_hats, loss_dict, id_logs = self.perform_train_iteration_on_batch(x, y)
+				y_hats, loss_dict, id_logs = self.perform_train_iteration_on_batch(x, y, rna)
 
 				self.optimizer.step()
 
@@ -165,7 +167,7 @@ class Coach:
 
 				self.global_step += 1
 
-	def perform_val_iteration_on_batch(self, x, y):
+	def perform_val_iteration_on_batch(self, x, y, rna):
 		y_hat, latent = None, None
 		cur_loss_dict, id_logs = None, None
 		y_hats = {idx: [] for idx in range(x.shape[0])}
@@ -176,7 +178,7 @@ class Coach:
 			else:
 				x_input = torch.cat([x, y_hat], dim=1)
 
-			y_hat, latent = self.net.forward(x_input, latent=latent, return_latents=True, interp=True)
+			y_hat, latent = self.net.forward(x_input, rna=rna, latent=latent, return_latents=True, interp=True)
 			if self.opts.dataset_type == "cars_encode":
 				y_hat = y_hat[:, :, 32:224, :]
 
@@ -193,10 +195,12 @@ class Coach:
 		for batch_idx, batch in enumerate(self.test_dataloader):
 			if batch_idx == 10:
 				break
-			x, y = batch
+			x, y, rna = batch
 			with torch.no_grad():
 				x, y = x.to(self.device).float(), y.to(self.device).float()
-				y_hats, cur_loss_dict, id_logs = self.perform_val_iteration_on_batch(x, y)
+				if rna is not None:
+					rna = rna.to(self.device).float()
+				y_hats, cur_loss_dict, id_logs = self.perform_val_iteration_on_batch(x, y, rna)
 			agg_loss_dict.append(cur_loss_dict)
 
 			# Logging related
