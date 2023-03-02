@@ -94,6 +94,7 @@ class ResNetBackboneEncoder(Module):
                     expr = GradualExprBlock(self.rna_num, self.lat_dim, 16)
                     self.exprs.append(expr)
                 self.weight = nn.Parameter(torch.zeros(self.expr_count))
+                print(self.exprs)
 
         self.styles = nn.ModuleList()
         self.style_count = n_styles

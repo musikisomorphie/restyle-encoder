@@ -76,7 +76,7 @@ class ImagesDataset(Dataset):
         im = Image.open(str(self.paths[index]))
         im = np.array(im)
 
-        rna = None
+        rna = torch.empty((0, 1))
         if 'rxrx19' in self.opts.dataset_type:
             col = im.shape[1] // 2
             im = np.concatenate((im[:, :col],
