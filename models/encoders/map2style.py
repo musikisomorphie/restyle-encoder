@@ -28,21 +28,6 @@ class GradualStyleBlock(Module):
         x = self.linear(x)
         return x
 
-class GradualExprBlock(Module):
-    def __init__(self, in_c, out_c, spatial):
-        super(GradualExprBlock, self).__init__()
-        self.out_c = out_c
-        self.spatial = spatial
-        num_pools = int(np.log2(spatial))
-        modules = [EqualLinear(in_c, out_c, activation=True)]
-        for i in range(num_pools - 1):
-            act = None if i == num_pools - 2 else True
-            modules.append(EqualLinear(out_c, out_c, activation=act))
-        self.eqlin = nn.Sequential(*modules)
-
-    def forward(self, x):
-        return self.eqlin(x)
-
 
 class GradualStyleBlock1(Module):
     def __init__(self, in_c, out_c, in_s, out_s=None, is_noise=False):
@@ -78,3 +63,19 @@ class GradualStyleBlock1(Module):
             x = x.view(-1, self.out_c)
             x = self.linear(x)
         return x
+
+
+class GradualExprBlock(Module):
+    def __init__(self, in_c, out_c, spatial):
+        super(GradualExprBlock, self).__init__()
+        self.out_c = out_c
+        self.spatial = spatial
+        num_pools = int(np.log2(spatial))
+        modules = [EqualLinear(in_c, out_c, activation=True)]
+        for i in range(num_pools - 1):
+            act = None if i == num_pools - 2 else True
+            modules.append(EqualLinear(out_c, out_c, activation=act))
+        self.eqlin = nn.Sequential(*modules)
+
+    def forward(self, x):
+        return self.eqlin(x)
