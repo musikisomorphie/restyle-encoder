@@ -104,13 +104,13 @@ class ResNetBackboneEncoder(Module):
 
     def forward(self, x, rna=None, lat=None):
         if lat is not None:
-            out = lat
+            out = lat.repeat(1, 1, self.lat_rep)
             if self.rna_tab:
                 exprs = []
                 for i in range(self.style_count):
                     exr = (self.weight[i] * self.exprs[i](rna))
                     exprs.append(exr.repeat(1, self.lat_rep))
-                out = lat + torch.stack(exprs, dim=1)
+                out += torch.stack(exprs, dim=1)
             return out, lat
 
         x = self.conv1(x)
@@ -126,10 +126,9 @@ class ResNetBackboneEncoder(Module):
             else:
                 out = sty
             outputs.append(out.repeat(1, self.lat_rep))
-            latents.append(sty.repeat(1, self.lat_rep))
+            latents.append(sty)
         out = torch.stack(outputs, dim=1)
-        lat = torch.stack(latents, dim=1)
-        return out, lat
+        return out, torch.stack(latents, dim=1)
 
 
 class ResNetBackboneEncoder0(Module):
