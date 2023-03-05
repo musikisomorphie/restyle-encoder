@@ -87,7 +87,7 @@ class ImagesDataset(Dataset):
             if self.opts.input_ch != -1:
                 im = np.expand_dims(im[:, :, self.opts.input_ch], -1)
         elif self.opts.dataset_type in ('CosMx', 'Xenium'):
-            rna_num = 960 if self.opts.dataset_type == 'CoxMx' else 280
+            rna_num = 960 if self.opts.dataset_type == 'CosMx' else 280
 
             if self.opts.rna in ('tabular', 'spatial'):
                 rna_pth = str(self.paths[index]).replace(self.exts[1:], '_rna.npz')

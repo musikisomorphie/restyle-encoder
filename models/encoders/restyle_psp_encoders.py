@@ -85,7 +85,7 @@ class ResNetBackboneEncoder(Module):
 
         self.rna_tab = False
         if opts.dataset_type in ('CosMx', 'Xenium'): 
-            self.rna_num = 960 if opts.dataset_type == 'CoxMx' else 280
+            self.rna_num = 960 if opts.dataset_type == 'CosMx' else 280
             if opts.rna == 'tabular':
                 self.rna_tab = True
                 self.exprs = nn.ModuleList()
