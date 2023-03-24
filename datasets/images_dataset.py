@@ -58,14 +58,14 @@ class ImagesDataset(Dataset):
 
     def __init__(self, source_root, target_root, opts, target_transform=None, source_transform=None):
         assert source_transform is None
-        if 'rxrx19' in opts.dataset_type:
-            self.exts = '*.png'
-        elif opts.dataset_type == 'CosMx':
-            self.exts = '*_flo.png'
+        if opts.dataset_type == 'CosMx':
+            self.ext = 'flo.png'
         elif opts.dataset_type == 'Xenium':
-            self.exts = '*_hne.png'
+            self.ext = 'hne.png'
+        elif opts.dataset_type == 'Visium':
+            self.ext = '.npz'
 
-        self.paths = list(Path(target_root).rglob(self.exts))
+        self.paths = list(Path(target_root).rglob(f'*{self.ext}'))
         self.target_transform = target_transform
         self.opts = opts
 
@@ -73,37 +73,22 @@ class ImagesDataset(Dataset):
         return len(self.paths)
 
     def __getitem__(self, index):
-        im = Image.open(str(self.paths[index]))
-        im = np.array(im)
-
-        rna = torch.empty((0, 1))
-        if 'rxrx19' in self.opts.dataset_type:
-            col = im.shape[1] // 2
-            im = np.concatenate((im[:, :col],
-                                 im[:, col:]), axis=-1)
-            if self.opts.dataset_type == 'rxrx19a':
-                im = im[:, :, :-1]
-
-            if self.opts.input_ch != -1:
-                im = np.expand_dims(im[:, :, self.opts.input_ch], -1)
-        elif self.opts.dataset_type in ('CosMx', 'Xenium'):
-            rna_num = 960 if self.opts.dataset_type == 'CosMx' else 280
-
-            if self.opts.rna in ('tabular', 'spatial'):
-                rna_pth = str(self.paths[index]).replace(self.exts[1:], '_rna.npz')
-                rna = sparse.load_npz(rna_pth)
-                if self.opts.rna == 'tabular':
-                    # CosMx: 960 rna + 20 negprb, Xenium: 280 rna + 61 negprb + 200 blank
-                    rna = rna[:, :, :rna_num]
-                    rna = rna.sum(axis=[0, 1]).todense().astype(np.float32)
-                    rna = torch.from_numpy(rna)
-                elif self.opts.rna == 'spatial':
-                    # TODO if rna is treated as spatial, be aware of transform
-                    pass
-
-        if self.target_transform:
-            im = self.target_transform(im)
+        if self.opts.dataset_type in ('CosMx', 'Xenium'):
+            img = Image.open(str(self.paths[index]))
+            img = np.array(img)
+            img = self.target_transform(img)
+            rna = str(self.paths[index]).replace(self.ext, 'rna.npz')
+            rna = sparse.load_npz(rna).sum((0, 1)).todense()
+            rna = torch.from_numpy(rna).to(img).float()
+            if self.opts.dataset_type == 'Xenium':
+                rna = rna[:self.opts.rna_num]
+        elif self.opts.dataset_type == 'Visium':
+            npz = np.load(str(self.paths[index]))
+            img = npz['img'][64:-64, 64:-64]
+            img = self.target_transform(img)
+            rna = np.array(npz['key_melanoma_marker'])
+            rna = torch.from_numpy(rna).to(img).float()
 
         # here the first im is a legacy input
         # which is not very useful in our case
-        return im, im, rna
+        return img, img, rna

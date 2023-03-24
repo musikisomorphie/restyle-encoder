@@ -229,11 +229,14 @@ class ModulatedConv2d(nn.Module):
             f'upsample={self.upsample}, downsample={self.downsample})'
         )
 
-    def forward(self, input, style):
+    def forward(self, input, style, drive):
         batch, in_channel, height, width = input.shape
 
         style = self.modulation(style).view(batch, 1, in_channel, 1, 1)
         weight = self.scale * self.weight * style
+        if drive is not None:
+            drive = drive.view(batch, 1, 1, self.kernel_size, self.kernel_size)
+            weight *= drive
 
         if self.demodulate:
             demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
@@ -302,14 +305,14 @@ class ConstantInput(nn.Module):
 
 class StyledConv(nn.Module):
     def __init__(
-            self,
-            in_channel,
-            out_channel,
-            kernel_size,
-            style_dim,
-            upsample=False,
-            blur_kernel=[1, 3, 3, 1],
-            demodulate=True,
+        self,
+        in_channel,
+        out_channel,
+        kernel_size,
+        style_dim,
+        upsample=False,
+        blur_kernel=[1, 3, 3, 1],
+        demodulate=True,
     ):
         super().__init__()
 
@@ -328,8 +331,8 @@ class StyledConv(nn.Module):
         # self.activate = ScaledLeakyReLU(0.2)
         self.activate = FusedLeakyReLU(out_channel)
 
-    def forward(self, input, style, noise=None):
-        out = self.conv(input, style)
+    def forward(self, input, style, drive, noise=None):
+        out = self.conv(input, style, drive)
         out = self.noise(out, noise=noise)
         # out = out + self.bias
         out = self.activate(out)
@@ -344,11 +347,11 @@ class ToRGB(nn.Module):
         if upsample:
             self.upsample = Upsample(blur_kernel)
 
-        self.conv = ModulatedConv2d(in_channel, img_chn, 1, style_dim, demodulate=False)
+        self.conv = ModulatedConv2d(in_channel, img_chn, 3, style_dim, demodulate=False)
         self.bias = nn.Parameter(torch.zeros(1, img_chn, 1, 1))
 
-    def forward(self, input, style, skip=None):
-        out = self.conv(input, style)
+    def forward(self, input, style, drive, skip=None):
+        out = self.conv(input, style, drive)
         out = out + self.bias
 
         if skip is not None:
@@ -363,6 +366,7 @@ class Generator(nn.Module):
     def __init__(
             self,
             size,
+            gene_dim,
             style_dim,
             n_mlp,
             channel_multiplier=2,
@@ -374,6 +378,7 @@ class Generator(nn.Module):
 
         self.size = size
 
+        self.gene_dim = gene_dim
         self.style_dim = style_dim
 
         layers = [PixelNorm()]
@@ -445,6 +450,16 @@ class Generator(nn.Module):
             in_channel = out_channel
 
         self.n_latent = self.log_size * 2 - 2
+        layers = []
+        for i in range(n_mlp):
+            in_dim = gene_dim if i == 0 else style_dim
+            out_dim = self.n_latent * 9 if i == n_mlp - 1 else style_dim
+            layers.append(
+                EqualLinear(
+                    in_dim, out_dim, lr_mul=lr_mlp, activation="fused_lrelu"
+                )
+            )
+        self.drive = nn.Sequential(*layers)
 
     def make_noise(self):
         device = self.input.input.device
@@ -481,7 +496,12 @@ class Generator(nn.Module):
             randomize_noise=True,
     ):
         if not input_is_latent:
-            styles = [self.style(s) for s in styles]
+            latent = self.style(styles[0]).unsqueeze(1)
+            latent = latent.repeat(1, self.n_latent, 1)
+        else:
+            latent = styles[0]
+
+        drives = self.drive(styles[1]).split(9, dim=-1)
 
         if noise is None:
             if randomize_noise:
@@ -491,45 +511,46 @@ class Generator(nn.Module):
                     getattr(self.noises, f'noise_{i}') for i in range(self.num_layers)
                 ]
 
-        if truncation < 1:
-            style_t = []
+        # if truncation < 1:
+        #     style_t = []
 
-            for style in styles:
-                style_t.append(
-                    truncation_latent + truncation * (style - truncation_latent)
-                )
+        #     for style in styles:
+        #         style_t.append(
+        #             truncation_latent + truncation * (style - truncation_latent)
+        #         )
 
-            styles = style_t
+        #     styles = style_t
 
-        if len(styles) < 2:
-            inject_index = self.n_latent
+        # if len(styles) < 2:
+        #     inject_index = self.n_latent
 
-            if styles[0].ndim < 3:
-                latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
-            else:
-                latent = styles[0]
+        #     if styles[0].ndim < 3:
+        #         latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
 
-        else:
-            if inject_index is None:
-                inject_index = random.randint(1, self.n_latent - 1)
+        #     else:
+        #         latent = styles[0]
 
-            latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
-            latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
+        # else:
+        #     if inject_index is None:
+        #         inject_index = random.randint(1, self.n_latent - 1)
 
-            latent = torch.cat([latent, latent2], 1)
+        #     latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
+        #     latent2 = styles[1].unsqueeze(1).repeat(1, self.n_latent - inject_index, 1)
+
+        #     latent = torch.cat([latent, latent2], 1)
 
         out = self.input(latent)
-        out = self.conv1(out, latent[:, 0], noise=noise[0])
+        out = self.conv1(out, latent[:, 0], drives[0], noise=noise[0])
 
-        skip = self.to_rgb1(out, latent[:, 1])
+        skip = self.to_rgb1(out, latent[:, 1], drives[1])
 
         i = 1
         for conv1, conv2, noise1, noise2, to_rgb in zip(
-                self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
+            self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
-            out = conv1(out, latent[:, i], noise=noise1)
-            out = conv2(out, latent[:, i + 1], noise=noise2)
-            skip = to_rgb(out, latent[:, i + 2], skip)
+            out = conv1(out, latent[:, i], drives[i], noise=noise1)
+            out = conv2(out, latent[:, i + 1], drives[i + 1], noise=noise2)
+            skip = to_rgb(out, latent[:, i + 2], drives[i + 2], skip)
 
             i += 2
 

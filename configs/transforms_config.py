@@ -92,13 +92,13 @@ class MedTransforms(TransformsConfig):
                 transforms.ToTensor(),
                 t_random_rotation,
                 transforms.RandomHorizontalFlip(),
-                transforms.Normalize(self.mean, self.std)]),
+                transforms.Normalize(self.mean, self.std, inplace=True)]),
             'transform_source': None,
             'transform_test': transforms.Compose([
                 transforms.ToTensor(),
-                transforms.Normalize(self.mean, self.std)]),
+                transforms.Normalize(self.mean, self.std, inplace=True)]),
             'transform_inference': transforms.Compose([
                 transforms.ToTensor(),
-                transforms.Normalize(self.mean, self.std)]),
+                transforms.Normalize(self.mean, self.std, inplace=True)]),
         }
         return transforms_dict

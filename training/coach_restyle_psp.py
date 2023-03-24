@@ -31,32 +31,32 @@ class Coach:
 		# Initialize network
 		self.net = pSp(self.opts).to(self.device)
 
-		# Estimate latent_avg via dense sampling if latent_avg is not available
-		if self.net.latent_avg is None:
-			self.net.latent_avg = self.net.decoder.mean_latent(int(1e5))[0].detach()
+		# # Estimate latent_avg via dense sampling if latent_avg is not available
+		# if self.net.latent_avg is None:
+		# 	self.net.latent_avg = self.net.decoder.mean_latent(int(1e5))[0].detach()
 
-		# get the image corresponding to the latent average
-		self.avg_image = self.net(self.net.latent_avg.unsqueeze(0),
-								  input_code=True,
-								  randomize_noise=False,
-								  return_latents=False,
-								  average_code=True)[0]
-		self.avg_image = self.avg_image.to(self.device).float().detach()
-		if self.opts.dataset_type == "cars_encode":
-			self.avg_image = self.avg_image[:, 32:224, :]
+		# # get the image corresponding to the latent average
+		# self.avg_image = self.net(self.net.latent_avg.unsqueeze(0),
+		# 						  input_code=True,
+		# 						  randomize_noise=False,
+		# 						  return_latents=False,
+		# 						  average_code=True)[0]
+		# self.avg_image = self.avg_image.to(self.device).float().detach()
+		# if self.opts.dataset_type == "cars_encode":
+		# 	self.avg_image = self.avg_image[:, 32:224, :]
 
-		avg = self.avg_image.clone()
-		if avg.shape[0] == 1:
-			common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
-													'avg_image0.jpg'))
-		else:
-			if avg.shape[0] == 5:
-				mito = -torch.ones(1, avg.shape[1], avg.shape[2])
-				avg = torch.cat((avg, mito.to(avg)), dim=0)
+		# avg = self.avg_image.clone()
+		# if avg.shape[0] == 1:
+		# 	common.tensor2im(avg).save(os.path.join(self.opts.exp_dir, 
+		# 											'avg_image0.jpg'))
+		# else:
+		# 	if avg.shape[0] == 5:
+		# 		mito = -torch.ones(1, avg.shape[1], avg.shape[2])
+		# 		avg = torch.cat((avg, mito.to(avg)), dim=0)
 				
-			for i in range(avg.shape[0] // 3):
-				common.tensor2im(avg[i * 3 : (i + 1) * 3]).save(os.path.join(self.opts.exp_dir, 
-																'avg_image{}.jpg'.format(i)))
+		# 	for i in range(avg.shape[0] // 3):
+		# 		common.tensor2im(avg[i * 3 : (i + 1) * 3]).save(os.path.join(self.opts.exp_dir, 
+		# 														'avg_image{}.jpg'.format(i)))
 
 		# Initialize loss
 		if self.opts.id_lambda > 0 and self.opts.moco_lambda > 0:
@@ -104,19 +104,20 @@ class Coach:
 		loss_dict, id_logs = None, None
 		y_hats = {idx: [] for idx in range(x.shape[0])}
 		for iter in range(self.opts.n_iters_per_batch):
-			if iter == 0:
-				avg_image_for_batch = self.avg_image.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
-				x_input = torch.cat([x, avg_image_for_batch], dim=1)
-				y_hat, latent = self.net.forward(x_input, rna=rna, latent=None, return_latents=True)
-			else:
-				y_hat_clone = y_hat.clone().detach().requires_grad_(True)
-				latent_clone = latent.clone().detach().requires_grad_(True)
-				x_input = torch.cat([x, y_hat_clone], dim=1)
-				y_hat, latent = self.net.forward(x_input, rna=rna, latent=latent_clone, return_latents=True)
+			# if iter == 0:
+			# 	avg_image_for_batch = self.avg_image.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
+			# 	x_input = torch.cat([x, avg_image_for_batch], dim=1)
+			# 	y_hat, latent = self.net.forward(x_input, rna=rna, latent=None, return_latents=True)
+			# else:
+			# 	y_hat_clone = y_hat.clone().detach().requires_grad_(True)
+			# 	latent_clone = latent.clone().detach().requires_grad_(True)
+			# 	x_input = torch.cat([x, y_hat_clone], dim=1)
+			# 	y_hat, latent = self.net.forward(x_input, rna=rna, latent=latent_clone, return_latents=True)
 
-			if self.opts.dataset_type == "cars_encode":
-				y_hat = y_hat[:, :, 32:224, :]
+			# if self.opts.dataset_type == "cars_encode":
+			# 	y_hat = y_hat[:, :, 32:224, :]
 
+			y_hat, latent = self.net.forward(x, rna=rna, latent=None, return_latents=True)
 			loss, loss_dict, id_logs = self.calc_loss(x, y, y_hat, latent)
 			loss.backward()
 			# store intermediate outputs
@@ -172,13 +173,14 @@ class Coach:
 		cur_loss_dict, id_logs = None, None
 		y_hats = {idx: [] for idx in range(x.shape[0])}
 		for iter in range(self.opts.n_iters_per_batch):
-			if iter == 0:
-				avg_image_for_batch = self.avg_image.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
-				x_input = torch.cat([x, avg_image_for_batch], dim=1)
-			else:
-				x_input = torch.cat([x, y_hat], dim=1)
+			# if iter == 0:
+			# 	avg_image_for_batch = self.avg_image.unsqueeze(0).repeat(x.shape[0], 1, 1, 1)
+			# 	x_input = torch.cat([x, avg_image_for_batch], dim=1)
+			# else:
+			# 	x_input = torch.cat([x, y_hat], dim=1)
 
-			y_hat, latent = self.net.forward(x_input, rna=rna, latent=latent, return_latents=True, interp=True)
+			y_hat, latent = self.net.forward(x, rna=rna, latent=latent, 
+				    						 return_latents=True, interp=True, randomize_noise=False)
 			if self.opts.dataset_type == "cars_encode":
 				y_hat = y_hat[:, :, 32:224, :]
 
@@ -191,9 +193,14 @@ class Coach:
 
 	def validate(self):
 		self.net.eval()
+		ndct = {}
+		for name, parm in self.net.decoder.named_parameters():
+			if 'noise.weight' in name:
+				ndct[name] = parm
+		print(ndct)
 		agg_loss_dict = []
 		for batch_idx, batch in enumerate(self.test_dataloader):
-			if batch_idx == 10:
+			if batch_idx == 8:
 				break
 			x, y, rna = batch
 			with torch.no_grad():
@@ -230,13 +237,16 @@ class Coach:
 				f.write('Step - {}, \n{}\n'.format(self.global_step, loss_dict))
 
 	def configure_optimizers(self):
-		params = list(self.net.encoder.parameters())
-		if self.opts.train_decoder:
-			params += list(self.net.decoder.parameters())
+		for name, parm in self.net.decoder.named_parameters():
+			if not (self.opts.train_decoder or 'noise.weight' in name):
+				parm.requires_grad = False
+			else: 
+				print(name, parm.requires_grad)
+
 		if self.opts.optim_name == 'adam':
-			optimizer = torch.optim.Adam(params, lr=self.opts.learning_rate)
+			optimizer = torch.optim.Adam(self.net.parameters(), lr=self.opts.learning_rate)
 		else:
-			optimizer = Ranger(params, lr=self.opts.learning_rate)
+			optimizer = Ranger(self.net.parameters(), lr=self.opts.learning_rate)
 		return optimizer
 
 	def configure_datasets(self):
@@ -312,7 +322,7 @@ class Coach:
 		for key, value in metrics_dict.items():
 			print('\t{} = '.format(key), value)
 
-	def parse_and_log_images(self, id_logs, x, y, y_hat, title, subscript=None, display_count=2):
+	def parse_and_log_images(self, id_logs, x, y, y_hat, title, subscript=None, display_count=8):
 		y = linspace(y[0], y[1], y.shape[0])
 		if 'rxrx19' in self.opts.dataset_type:
 			if self.opts.input_ch == -1:
@@ -371,6 +381,6 @@ class Coach:
 		save_dict = {
 			'state_dict': self.net.state_dict(),
 			'opts': vars(self.opts),
-			'latent_avg': self.net.latent_avg
+			# 'latent_avg': self.net.latent_avg
 		}
 		return save_dict

@@ -28,7 +28,8 @@ class pSp(nn.Module):
         # if 'rxrx19b' in self.opts.dataset_type:
         #     img_chn = 6 if self.opts.input_ch == -1 else 1
         # img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
-        self.decoder = Generator(self.opts.output_size, 512, 8, channel_multiplier=2, img_chn=img_chn)
+        self.decoder = Generator(self.opts.output_size, self.opts.rna_num, 
+                                 512, 8, channel_multiplier=2, img_chn=img_chn)
         self.face_pool = torch.nn.AdaptiveAvgPool2d((256, 256))
         # Load weights if needed
         self.load_weights()
@@ -50,30 +51,30 @@ class pSp(nn.Module):
         if self.opts.checkpoint_path is not None:
             print(f'Loading ReStyle pSp from checkpoint: {self.opts.checkpoint_path}')
             ckpt = torch.load(self.opts.checkpoint_path, map_location='cpu')
-            self.encoder.load_state_dict(self.__get_keys(ckpt, 'encoder'), strict=False)
+            self.encoder.load_state_dict(self.__get_keys(ckpt, 'encoder'), strict=True)
             self.decoder.load_state_dict(self.__get_keys(ckpt, 'decoder'), strict=True)
-            self.__load_latent_avg(ckpt)
+            # self.__load_latent_avg(ckpt)
         else:
             # encoder_ckpt = self.__get_encoder_checkpoint()
             # self.encoder.load_state_dict(encoder_ckpt, strict=False)
             print(f'Loading decoder weights from pretrained path: {self.opts.stylegan_weights}')
             ckpt = torch.load(self.opts.stylegan_weights)
             self.decoder.load_state_dict(ckpt['g_ema'], strict=True)
-            self.__load_latent_avg(ckpt, repeat=self.n_styles)
+            # self.__load_latent_avg(ckpt, repeat=self.n_styles)
 
     def forward(self, x, rna=None, latent=None, resize=False, latent_mask=None, input_code=False, randomize_noise=True,
                 inject_latent=None, return_latents=False, alpha=None, average_code=False, input_is_full=False, interp=False):
         if input_code:
             codes = x
         else:
-            codes, _ = self.encoder(x, rna)
-            # residual step
-            if x.shape[1] == 6 and latent is not None:
-                # learn error with respect to previous iteration
-                codes = codes + latent
-            else:
-                # first iteration is with respect to the avg latent code
-                codes = codes + self.latent_avg.repeat(codes.shape[0], 1, 1)
+            codes = self.encoder(x, rna)
+            # # residual step
+            # if x.shape[1] == 6 and latent is not None:
+            #     # learn error with respect to previous iteration
+            #     codes = codes + latent
+            # else:
+            #     # first iteration is with respect to the avg latent code
+            #     codes = codes + self.latent_avg.repeat(codes.shape[0], 1, 1)
 
         if latent_mask is not None:
             for i in latent_mask:
@@ -85,9 +86,10 @@ class pSp(nn.Module):
                 else:
                     codes[:, i] = 0
         if interp:
-            codes = linspace(codes[0],
-                             codes[1],
-                             codes.shape[0])
+            rna = linspace(rna[0],
+                           rna[1],
+                           rna.shape[0])
+            codes[1:] = codes[1]
 
 
         if average_code:
@@ -95,7 +97,7 @@ class pSp(nn.Module):
         else:
             input_is_latent = (not input_code) or (input_is_full)
 
-        images, result_latent = self.decoder([codes],
+        images, result_latent = self.decoder([codes, rna],
                                              input_is_latent=input_is_latent,
                                              randomize_noise=randomize_noise,
                                              return_latents=return_latents)
