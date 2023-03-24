@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=1 taskset -c 32-63 -m scripts.train_restyle_psp \
+CUDA_VISIBLE_DEVICES=1 taskset -c 32-63 python -m scripts.train_restyle_psp \
 --rna=tabular \
 --rna_num=280 \
 --dataset_type=Xenium \
