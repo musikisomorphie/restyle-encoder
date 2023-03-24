@@ -20,7 +20,8 @@ dataset_paths = {
     'rxrx19a_HRCE': 'Data/non_IID/preproc/rxrx19a_HRCE_cell/images/',
     'rxrx19a_VERO': 'Data/non_IID/preproc/rxrx19a_VERO_cell/images/',
     'CosMx': 'Data/CosMx/GAN/crop',
-    'Xenium': 'Data/Xenium/GAN/crop'
+    'Xenium': 'Data/Xenium/GAN/crop',
+    'Visium': 'Data/Visium/GAN/crop',
 }
 
 model_paths = {

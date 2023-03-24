@@ -93,5 +93,12 @@ DATASETS = {
         'train_target_root': dataset_paths['Xenium'],
         'test_source_root': dataset_paths['Xenium'],
         'test_target_root': dataset_paths['Xenium']
+    },
+    'Visium': {
+        'transforms': transforms_config.MedTransforms,
+        'train_source_root': dataset_paths['Visium'],
+        'train_target_root': dataset_paths['Visium'],
+        'test_source_root': dataset_paths['Visium'],
+        'test_target_root': dataset_paths['Visium']
     }
 }
