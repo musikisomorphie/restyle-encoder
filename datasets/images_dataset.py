@@ -85,10 +85,10 @@ class ImagesDataset(Dataset):
         elif self.opts.dataset_type == 'Visium':
             npz = np.load(str(self.paths[index]))
             img = npz['img'][96:-96, 96:-96]
-            img = Image.fromarray(img)
-            # the resize step is inspired by clean-FID
-            img = img.resize((128, 128), resample=Image.Resampling.BICUBIC)
-            img = np.asarray(img).clip(0, 255).astype(np.uint8)
+            # img = Image.fromarray(img)
+            # # the resize step is inspired by clean-FID
+            # img = img.resize((128, 128), resample=Image.Resampling.BICUBIC)
+            # img = np.asarray(img).clip(0, 255).astype(np.uint8)
             img = self.target_transform(img)
             rna = npz['key_melanoma_marker']
             rna = torch.from_numpy(rna).to(img).float()
