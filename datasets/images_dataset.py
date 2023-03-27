@@ -75,7 +75,11 @@ class ImagesDataset(Dataset):
     def __getitem__(self, index):
         if self.opts.dataset_type in ('CosMx', 'Xenium'):
             img = Image.open(str(self.paths[index]))
-            img = np.array(img)
+            img = img.resize((64, 64), 
+                             resample=Image.Resampling.BICUBIC)
+            img = img.resize((128, 128), 
+                             resample=Image.Resampling.BICUBIC)
+            img = np.array(img).clip(0, 255).astype(np.uint8)
             img = self.target_transform(img)
             rna = str(self.paths[index]).replace(self.ext, 'rna.npz')
             rna = sparse.load_npz(rna).sum((0, 1)).todense()
@@ -85,10 +89,10 @@ class ImagesDataset(Dataset):
         elif self.opts.dataset_type == 'Visium':
             npz = np.load(str(self.paths[index]))
             img = npz['img'][96:-96, 96:-96]
-            # img = Image.fromarray(img)
-            # # the resize step is inspired by clean-FID
-            # img = img.resize((128, 128), resample=Image.Resampling.BICUBIC)
-            # img = np.asarray(img).clip(0, 255).astype(np.uint8)
+            img = Image.fromarray(img)
+            # the resize step is inspired by clean-FID
+            img = img.resize((128, 128), resample=Image.Resampling.BICUBIC)
+            img = np.asarray(img).clip(0, 255).astype(np.uint8)
             img = self.target_transform(img)
             rna = npz['key_melanoma_marker']
             rna = torch.from_numpy(rna).to(img).float()
