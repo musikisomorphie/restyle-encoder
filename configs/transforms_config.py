@@ -74,10 +74,21 @@ class MedTransforms(TransformsConfig):
             else:
                 img_chn = 1
         # img_chn = 6 if 'rxrx19b' in self.opts.dataset_type else 3
-        self.mean = [0.5] * img_chn
-        self.std = [0.5] * img_chn
+        self.mean = [0.5] * img_chn + [0] * opts.rna_num
+        self.std = [0.5] * img_chn + [1] * opts.rna_num
 
     def get_transforms(self):
+        def to_tensor(x):
+            if isinstance(x, list):
+                # img divided by 255 while rna remains unchanged
+                x[0] = transforms.functional.to_tensor(x[0])
+                x[1] = transforms.functional.to_tensor(x[1])
+                x = torch.cat([x[0], x[1]], 0)
+            else:
+                x = transforms.functional.to_tensor(x)
+            return x
+        t_tensor = transforms.Lambda(lambda x: to_tensor(x))
+
         angles = [0, 90, 180, 270]
 
         def random_rotation(x):
@@ -89,16 +100,16 @@ class MedTransforms(TransformsConfig):
 
         transforms_dict = {
             'transform_gt_train': transforms.Compose([
-                transforms.ToTensor(),
+                t_tensor,
                 t_random_rotation,
                 transforms.RandomHorizontalFlip(),
                 transforms.Normalize(self.mean, self.std, inplace=True)]),
             'transform_source': None,
             'transform_test': transforms.Compose([
-                transforms.ToTensor(),
+                t_tensor,
                 transforms.Normalize(self.mean, self.std, inplace=True)]),
             'transform_inference': transforms.Compose([
-                transforms.ToTensor(),
+                t_tensor,
                 transforms.Normalize(self.mean, self.std, inplace=True)]),
         }
         return transforms_dict

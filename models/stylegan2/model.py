@@ -501,7 +501,11 @@ class Generator(nn.Module):
         else:
             latent = styles[0]
 
-        drives = self.drive(styles[1]).split(9, dim=-1)
+        if len(styles[1].shape) == 4:
+            drv = styles[1].sum((-1, -2))
+        else:
+            drv = styles[1]
+        drives = self.drive(drv).split(9, dim=-1)
 
         if noise is None:
             if randomize_noise:

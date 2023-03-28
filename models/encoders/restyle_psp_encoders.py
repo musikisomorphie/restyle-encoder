@@ -59,6 +59,10 @@ class ResNetBackboneEncoder(Module):
     """
     def __init__(self, n_styles=18, opts=None):
         super(ResNetBackboneEncoder, self).__init__()
+        m_dim, r_dim = 512, 64 
+        if opts.dataset_type != 'Visium':
+            m_dim -= r_dim
+
         stride = 2
         if opts.output_size == 128:
             stride = 1 
@@ -83,8 +87,33 @@ class ResNetBackboneEncoder(Module):
         self.styles = nn.ModuleList()
         self.style_count = n_styles
         for _ in range(self.style_count):
-            self.styles.append(GradualStyleBlock(512, 512, 16))
-        
+            self.styles.append(GradualStyleBlock(512, m_dim, 16))
+
+        if opts.dataset_type != 'Visium':
+            self.c0 = nn.Conv2d(opts.rna_num, 32, kernel_size=1, bias=False)
+            self.c1 = nn.Conv2d(32, 64, kernel_size=7, stride=stride, padding=3, bias=False)
+            self.b1 = BatchNorm2d(64)
+            self.rl = PReLU(64)
+
+            resnet_basenet = resnet34()
+            blocks = [
+                resnet_basenet.layer1,
+                resnet_basenet.layer2,
+                resnet_basenet.layer3,
+                resnet_basenet.layer4
+            ]
+            modules = []
+            for block in blocks:
+                for bottleneck in block:
+                    modules.append(bottleneck)
+            self.bd = Sequential(*modules)
+
+            self.spats = nn.ModuleList()
+            self.spat_count = n_styles
+            for _ in range(self.spat_count):
+                self.spats.append(GradualStyleBlock(512, r_dim, 16))
+
+
     def forward(self, x, rna=None, lat=None):
         x = self.conv1(x)
         x = self.bn1(x)
@@ -95,7 +124,16 @@ class ResNetBackboneEncoder(Module):
         for i in range(self.style_count):
             lats.append(self.styles[i](x))
         lats = torch.stack(lats, dim=1)
-        # lats = lats.repeat(1, 1, 4)
+
+        if len(rna.shape) == 4:
+            rna = self.c1(self.c0(rna))
+            rna = self.bd(self.rl(self.b1(rna)))
+            rnas = []
+            for i in range(self.spat_count):
+                rnas.append(self.spats[i](rna))
+            rnas = torch.stack(rnas, dim=1)
+            lats = torch.cat([lats, rnas], -1)
+
         return lats
 
 
